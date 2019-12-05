@@ -36,28 +36,44 @@ fun MutableList<Node>.addInstruction(instruction: String) : MutableList<Node> {
     return this
 }
 
+fun getPath (instructions: List<String>) : MutableList<Node>  {
+    val path = mutableListOf(Node(0, 0))
+
+    instructions.forEach { instruction -> path.addInstruction(instruction) }
+
+    return path
+}
+
 fun dayThreePartOne(): Int {
     val centralPort = Node(0, 0)
-    val pathOne = mutableListOf(centralPort)
-    val pathTwo = mutableListOf(centralPort)
 
     val instructions = getInstructions()
 
-    instructions[0].forEach { instruction -> pathOne.addInstruction(instruction) }
-    instructions[1].forEach { instruction -> pathTwo.addInstruction(instruction) }
-
-    val closestIntersection =  pathOne
-        .filter { node -> node != centralPort }
-        .toSet()
-        .intersect(
-            pathTwo.filter { node -> node != centralPort }
-        )
+    val closestIntersection = getIntersections(getPath(instructions[0]), getPath(instructions[1]))
         .toList().minBy { manhattanDistance(centralPort, it) } ?: throw Exception("Empty list provided")
 
     return manhattanDistance(centralPort, closestIntersection)
 }
 
+fun dayThreePartTwo(): Int {
+    val centralPort = Node(0, 0)
 
-fun main () {
-    print(dayThreePartOne())
+    val instructions = getInstructions()
+
+    val pathOne = getPath(instructions[0])
+    val pathTwo = getPath(instructions[1])
+
+    val closestIntersection = getIntersections(pathOne, pathTwo)
+        .toList()
+        .minBy { intersection -> pathOne.indexOf(intersection) + pathTwo.indexOf(intersection) }
+
+    return pathOne.indexOf(closestIntersection) + pathTwo.indexOf(closestIntersection)
 }
+
+fun getIntersections(pathOne: List<Node>, pathTwo: List<Node>): Set<Node> = pathOne
+    .filter { node -> node != Node(0, 0) }
+    .toSet()
+    .intersect(
+        pathTwo.filter { node -> node !=  Node(0, 0) }
+    )
+
